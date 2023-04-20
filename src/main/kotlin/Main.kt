@@ -1,19 +1,8 @@
 import java.nio.file.Files
 import java.nio.file.Paths
 
-// Somehow assigning a lambda to a variable does not give the correct signature
-@Suppress("UNUSED_PARAMETER")
-fun todo(unused: String): Int {
-    return -1
-}
-
-const val problems = 3
-
 // When using the REPL, relative paths resolve to root :-(
-val base = "/Users/jeffpalentine/Workspace/learn/aoc/Advent-of-Code-2022";
-
-val examples = (1..problems).map { Files.readString(Paths.get("$base/inputs/0$it.example.txt")) }
-val actuals = (1..problems).map { Files.readString(Paths.get("$base/inputs/0$it.txt")).trim() }
+const val base = "/Users/jeffpalentine/Workspace/learn/aoc/Advent-of-Code-2022"
 
 val solutions = listOf(
     Day1(),
@@ -21,37 +10,40 @@ val solutions = listOf(
     Day3(),
 )
 
+val n = solutions.size
+
+private fun readFile(path: String): String = Files.readString(Paths.get(path))
+private fun example(it: Int): String = readFile("$base/inputs/0$it.example.txt")
+private fun actual(it: Int): String = readFile("$base/inputs/0$it.txt")
+
+val examples = (1..n).map { example(it) }
+val actualInputs = (1..n).map { actual(it).trim() }
+
 fun main(args: Array<String>) {
-    val problem = if (args.isNotEmpty()) args[0].toInt() else problems
-    printProblem(problem);
+    val problem = if (args.isNotEmpty()) args[0].toInt() else n
+    printProblem(problem)
 }
 
 fun printProblem(i: Int) {
-    assert(i <= problems)
+    assert(i <= n)
 
     val idx = i - 1
     val solution = solutions[idx]
 
-    println("Problem $i");
+    println("$i.1")
+    print("  Example: ")
+    println(solution.part1(examples[idx]))
+    print("  Actual: ")
+    println(solution.part1(actualInputs[idx]))
 
-    println("Part 1")
-    println("Example")
-    println(solution.part1(examples.get(idx)));
-    println("Actual")
-    println(solution.part1(actuals.get(idx)));
-
-    println("----")
-
-    println("Part 2")
-    println("Example")
-    println(solution.part2(examples.get(idx)));
-    println("Actual")
-    println(solution.part2(actuals.get(idx)));
-
-    println("====")
+    println("$i.2")
+    print("  Example: ")
+    println(solution.part2(examples[idx]))
+    print("  Actual: ")
+    println(solution.part2(actualInputs[idx]))
 }
 
-fun charPriority(c : Char) : Int {
+fun charPriority(c: Char): Int {
     // A-Z = 65-90
     // a-z = 97-122
     val o = c.code
@@ -66,29 +58,26 @@ interface Solution {
 
 class Day1 : Solution {
     override fun part1(input: String): Int {
-        return input.split("\n\n")
-            .map {
-                it.lines().map { it.toInt() }.sum()
-            }
-            .max();
+        return input.split("\n\n").maxOf { it ->
+            it.lines().sumOf { it.toInt() }
+        }
     }
 
     override fun part2(input: String): Int {
         return input.split("\n\n")
-            .map {
-                it.lines().map { it.toInt() }.sum()
-            }
+            .map { it.lines().sumOf(String::toInt) }
             .sorted()
             .takeLast(3)
-            .sum();
+            .sum()
     }
 }
 
 class Day2 : Solution {
+    private val scores = mapOf('X' to 1, 'Y' to 2, 'Z' to 3)
+    private val beats = mapOf('A' to 'Z', 'B' to 'X', 'C' to 'Y')
+    private val equal = mapOf('A' to 'X', 'B' to 'Y', 'C' to 'Z')
+
     override fun part1(input: String): Int {
-        val scores = mapOf('X' to 1, 'Y' to 2, 'Z' to 3)
-        val beats = mapOf('A' to 'Z', 'B' to 'X', 'C' to 'Y')
-        val equal = mapOf('A' to 'X', 'B' to 'Y', 'C' to 'Z')
 
         val strategy = input.split('\n')
             .map { it.split(' ') }
@@ -103,9 +92,6 @@ class Day2 : Solution {
     }
 
     override fun part2(input: String): Int {
-        val scores = mapOf('X' to 1, 'Y' to 2, 'Z' to 3)
-        val beats = mapOf('A' to 'Z', 'B' to 'X', 'C' to 'Y')
-        val equal = mapOf('A' to 'X', 'B' to 'Y', 'C' to 'Z')
         val loses = mapOf('A' to 'Y', 'B' to 'Z', 'C' to 'X')
 
         val strategy = input.split('\n')
@@ -136,16 +122,16 @@ class Day2 : Solution {
 
 class Day3 : Solution {
     override fun part1(input: String): Int {
-        return input.lines().map {
+        return input.lines().sumOf {
             val left = it.substring(0, it.length / 2)
             val right = it.substring(it.length / 2)
 
             charPriority(left.toSet().intersect(right.toSet()).first())
-        }.sum()
+        }
     }
 
     override fun part2(input: String): Int {
-        return input.lines().chunked(3).map {
+        return input.lines().chunked(3).sumOf {
             val x = it[0].toSet()
             val y = it[1].toSet()
             val z = it[2].toSet()
@@ -153,6 +139,6 @@ class Day3 : Solution {
             val badges = x.intersect(y).intersect(z)
 
             charPriority(badges.first())
-        }.sum()
+        }
     }
 }
