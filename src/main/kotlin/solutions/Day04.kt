@@ -1,26 +1,34 @@
 package solutions
 
 class Day04 : Solution {
-    private fun parseRange(input: String): IntRange {
-        val (left, right) = input.split('-')
-        return left.toInt()..right.toInt()
-    }
-
     override fun part1(input: String): String {
         return input.lines().count {
-            val (left, right) = it.split(',').map(::parseRange)
-            val leftContained = left.first >= right.first && left.last <= right.last
-            val rightContained = left.first <= right.first && left.last >= right.last
+            val (left, right) = it.toRangePair()
 
-            leftContained || rightContained
+            left.contains(right) || right.contains(left)
         }.toString()
     }
 
     override fun part2(input: String): String {
         return input.lines().count {
-            val (left, right) = it.split(',').map(::parseRange)
-
-            left.intersect(right).isNotEmpty()
+            val (left, right) = it.toRangePair()
+            
+            left intersects right
         }.toString()
     }
+
+    private fun IntRange.contains(other: IntRange) = first <= other.first && last >= other.last
+
+    private infix fun IntRange.intersects(other: IntRange) = first <= other.last && other.first <= last
+
+    private fun String.toRange(): IntRange {
+        val (left, right) = split('-')
+        return left.toInt()..right.toInt()
+    }
+
+    private fun String.toRangePair(): Pair<IntRange, IntRange> {
+        val (left, right) = split(',')
+        return Pair(left.toRange(), right.toRange())
+    }
+
 }
