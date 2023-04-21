@@ -30,5 +30,4 @@ class Day04 : Solution {
         val (left, right) = split(',')
         return Pair(left.toRange(), right.toRange())
     }
-
 }
