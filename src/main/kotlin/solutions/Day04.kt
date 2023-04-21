@@ -12,7 +12,7 @@ class Day04 : Solution {
     override fun part2(input: String): String {
         return input.lines().count {
             val (left, right) = it.toRangePair()
-            
+
             left intersects right
         }.toString()
     }

@@ -8,6 +8,8 @@ val solutions = listOf(
     Day03(),
     Day04(),
     Day05(),
+    Day06(),
+    Day07(),
 )
 
 val n = solutions.size
