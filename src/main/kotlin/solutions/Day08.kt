@@ -2,9 +2,36 @@ package solutions
 
 typealias Height = Int
 typealias Grid = List<List<Height>>
-typealias Visibility = List<MutableList<Boolean>>
+typealias LineOfSight = List<Height>
+
+// A list would be fine, and even more efficient, but this is more fun.
+class LinesOfSight(right: LineOfSight, left: LineOfSight, down: LineOfSight, up: LineOfSight)
+    : Iterable<LineOfSight> {
+    private val lines = listOf(right, left, down, up)
+    override fun iterator(): Iterator<LineOfSight> {
+        return lines.iterator()
+    }
+}
 
 fun String.toGrid(): Grid = this.lines().map { it.map(Char::digitToInt) }
+
+// Cast rays in the cardinal directions
+fun Grid.linesOfSight(i: Int, j: Int): LinesOfSight {
+    val row = get(i)
+    val h = size
+    val w = row.size
+
+    return LinesOfSight(
+        // going right
+        (j + 1 until w).map { row[it] },
+        // going left
+        (j - 1 downTo 0).map { row[it] },
+        // going down
+        (i + 1 until h).map { this[it][j] },
+        // going up
+        (i - 1 downTo 0).map { this[it][j] },
+    )
+}
 
 class Day08 : Solution {
     override fun part1(input: String): String {
@@ -13,66 +40,36 @@ class Day08 : Solution {
         val h = grid.size
         val w = grid[0].size
 
-        val visibility: Visibility = grid.map { it.map { false }.toMutableList() }
+        // Less efficient than doing directional fills, but shares more code with pt2
+        // See git history for the fill-based approach.
+        return (0 until h).sumOf { i ->
+            (0 until w).filter { j ->
+                val height = grid[i][j]
 
-        // Fill Right
-        for (i in 0 until h) {
-            visibility[i][0] = true
-            var highestSeen = grid[i][0]
-            for (j in 1 until w) {
-                if (grid[i][j] > highestSeen) {
-                    visibility[i][j] = true
-                    highestSeen = grid[i][j]
+                grid.linesOfSight(i, j).any {
+                    it.all { h -> h < height }
                 }
-            }
-        }
-        // Fill Left
-        for (i in 0 until h) {
-            visibility[i][w - 1] = true
-            var highestSeen = grid[i][w-1]
-            for (j in w - 2 downTo 0) {
-                if (grid[i][j] > highestSeen) {
-                    visibility[i][j] = true
-                    highestSeen = grid[i][j]
-                }
-            }
-        }
-        // Fill Down
-        for (j in 0 until w) {
-            visibility[0][j] = true
-            var highestSeen = grid[0][j]
-            for (i in 1 until h) {
-                if (grid[i][j] > highestSeen) {
-                    visibility[i][j] = true
-                    highestSeen = grid[i][j]
-                }
-            }
-        }
-        // Fill Up
-        for (j in 0 until w) {
-            visibility[h - 1][j] = true
-            var highestSeen = grid[h-1][j]
-            for (i in h - 2 downTo 0) {
-                if (grid[i][j] > highestSeen) {
-                    visibility[i][j] = true
-                    highestSeen = grid[i][j]
-                }
-            }
-        }
-
-//        [3x, 0x, 3x, 7x, 3x]
-//        [2x, 5x, 5x, 1 , 2x]
-//        [6x, 5x, 3 , 3x, 2x]
-//        [3x, 3 , 5x, 4 , 9x]
-//        [3x, 5x, 3x, 9x, 0x]
-
-//        visibility.forEach { println(it) }
-
-        return visibility.sumOf { it -> it.count { it } }.toString()
+            }.size
+        }.toString()
     }
 
     override fun part2(input: String): String {
-        val grid = input.toGrid()
-        return "-1"
+        val grid = input.trim().toGrid()
+
+        val h = grid.size
+        val w = grid[0].size
+
+        // Less efficient than doing directional fills, but shares more code with pt2
+        return (0 until h).maxOf { i ->
+            (0 until w).maxOf { j ->
+                val height = grid[i][j]
+
+                grid.linesOfSight(i, j).map {
+                    val visible = it.takeWhile { h -> h < height }.size
+                    // If vision blocked by a tree, that tree is also visible
+                    if (visible != it.size) visible + 1 else visible  // not handing boundaries
+                }.reduce { x, b -> x * b }
+            }
+        }.toString()
     }
 }
