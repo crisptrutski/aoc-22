@@ -38,7 +38,7 @@ private fun Position.getPulledBy(parent: Position): Position = if (parent.should
     this
 }
 
-private fun String.toMove(): Move = Move(this[0].toDirection(), this[2].digitToInt())
+private fun String.toMove(): Move = Move(this[0].toDirection(), this.split(" ")[1].toInt())
 
 private fun Char.toDirection(): Direction = when (this) {
     'U' -> Direction.UP
@@ -75,19 +75,23 @@ class Day09 : Solution {
             }
         }
 
-        val minW = visited.minOf { it.first }
-        val maxW = visited.maxOf { it.first }
-        val minH = visited.minOf { it.second }
-        val maxH = visited.maxOf { it.second }
+//        visualize(visited)
+
+        return visited.count().toString()
+    }
+
+    private fun visualize(positions: Set<Position>) {
+        val minW = positions.minOf { it.first }
+        val maxW = positions.maxOf { it.first }
+        val minH = positions.minOf { it.second }
+        val maxH = positions.maxOf { it.second }
 
         println()
         for (y in minH..maxH) {
             for (x in minW..maxW) {
-                print(if (visited.contains(Position(x, maxH - y))) '#' else '.')
+                print(if (positions.contains(Position(x, maxH - y))) '#' else '.')
             }
             println()
         }
-
-        return visited.count().toString()
     }
 }
