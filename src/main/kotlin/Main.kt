@@ -2,6 +2,8 @@ import solutions.*
 import java.nio.file.Files
 import java.nio.file.Paths
 
+// TODO: We should instead create an instance of the class for every example we run.
+//       That way we can initialize some state if we want. Take input in constructor.
 val solutions = listOf(
     Day01(),
     Day02(),
@@ -11,6 +13,7 @@ val solutions = listOf(
     Day06(),
     Day07(),
     Day08(),
+    Day09(),
 )
 
 val n = solutions.size
@@ -18,6 +21,9 @@ val n = solutions.size
 // When using the REPL, relative paths resolve to root :-(
 const val base = "/Users/jeffpalentine/Workspace/learn/aoc/Advent-of-Code-2022"
 
+// TODO: If we are missing a non-example file, we should pull it from the website.
+//       Being smart enough to extract the example input is probably too complicated.
+//       Maybe they are nice and put some identifiers in the HTML.
 private fun readFile(path: String): String = Files.readString(Paths.get(path))
 private fun example(it: Int): String = readFile("$base/inputs/0$it.example.txt")
 private fun input(it: Int): String = readFile("$base/inputs/0$it.txt")
@@ -35,7 +41,6 @@ fun printProblem(i: Int) {
     val example = example(i)
     val input = input(i)
 
-
     println("$i.1")
     print("  Example: ")
     println(solution.part1(example))
@@ -47,5 +52,7 @@ fun printProblem(i: Int) {
     println(solution.part2(example))
     print("  Actual: ")
     println(solution.part2(input))
+
+    // TODO: We should version control the answers, to test refactoring correct solutions safely.
 }
 
