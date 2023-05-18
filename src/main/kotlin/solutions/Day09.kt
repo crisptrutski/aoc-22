@@ -20,14 +20,23 @@ fun Position.move(dir: Direction): Position {
     }
 }
 
-private fun sign(x : Int, y : Int) : Int {
+private fun sign(x: Int, y: Int): Int {
     return if (x > y) 1 else if (x < y) -1 else 0
 }
 
-private fun Position.getPulledBy(parent: Position): Position = Position(
-    if ((first - parent.first).absoluteValue <= 1) first else first + sign(parent.first, first),
-    if ((second - parent.second).absoluteValue <= 1) second else second + sign(parent.second, second),
-)
+private fun isTouching(x: Int, y: Int): Boolean = (x - y).absoluteValue <= 1
+
+private fun Position.shouldPull(tail: Position): Boolean =
+    !isTouching(first, tail.first) || !isTouching(second, tail.second)
+
+private fun Position.getPulledBy(parent: Position): Position = if (parent.shouldPull(this)) {
+    Position(
+        first + sign(parent.first, first),
+        second + sign(parent.second, second),
+    )
+} else {
+    this
+}
 
 private fun String.toMove(): Move = Move(this[0].toDirection(), this[2].digitToInt())
 
@@ -64,6 +73,19 @@ class Day09 : Solution {
                 // Track where the tail visited
                 visited.add(pieces.last())
             }
+        }
+
+        val minW = visited.minOf { it.first }
+        val maxW = visited.maxOf { it.first }
+        val minH = visited.minOf { it.second }
+        val maxH = visited.maxOf { it.second }
+
+        println()
+        for (y in minH..maxH) {
+            for (x in minW..maxW) {
+                print(if (visited.contains(Position(x, maxH - y))) '#' else '.')
+            }
+            println()
         }
 
         return visited.count().toString()

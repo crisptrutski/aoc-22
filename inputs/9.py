@@ -7,7 +7,7 @@ def sign(x):
     return complex((x.real > 0) - (x.real < 0), (x.imag > 0) - (x.imag < 0))
 
 
-for line in open('09.txt'):
+for line in open('09.example2.txt'):
     for _ in range(int(line[2:])):
         rope[0] += dirs[line[0]]
 
