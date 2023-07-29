@@ -3,7 +3,6 @@ package solutions
 import kotlin.math.absoluteValue
 
 typealias Position = Pair<Int, Int>
-typealias Positions = MutableList<Position>
 
 enum class Direction {
     UP, DOWN, LEFT, RIGHT,
@@ -20,25 +19,34 @@ fun Position.move(dir: Direction): Position {
     }
 }
 
-private fun sign(x: Int, y: Int): Int {
-    return if (x > y) 1 else if (x < y) -1 else 0
+private fun Position.getPulledBy(parent: Position): Position {
+    var x = this.first
+    var y = this.second
+
+    val dx = parent.first - x
+    val dy = parent.second - y
+
+    if (dx.absoluteValue > 1) {
+        x += dx / dx.absoluteValue
+        if (dy.absoluteValue > 1) {
+            y += dy / dy.absoluteValue
+        } else {
+            y = parent.second
+        }
+    } else {
+        if (dy.absoluteValue > 1) {
+            x = parent.first
+            y += dy / dy.absoluteValue
+        }
+    }
+
+    return Position(x, y)
 }
 
-private fun isTouching(x: Int, y: Int): Boolean = (x - y).absoluteValue <= 1
-
-private fun Position.shouldPull(tail: Position): Boolean =
-    !isTouching(first, tail.first) || !isTouching(second, tail.second)
-
-private fun Position.getPulledBy(parent: Position): Position = if (parent.shouldPull(this)) {
-    Position(
-        first + sign(parent.first, first),
-        second + sign(parent.second, second),
-    )
-} else {
-    this
-}
-
-private fun String.toMove(): Move = Move(this[0].toDirection(), this.split(" ")[1].toInt())
+private fun String.toMove(): Move = Move(
+    this[0].toDirection(),
+    this.split(" ")[1].toInt()
+)
 
 private fun Char.toDirection(): Direction = when (this) {
     'U' -> Direction.UP
@@ -48,9 +56,14 @@ private fun Char.toDirection(): Direction = when (this) {
     else -> throw IllegalArgumentException()
 }
 
+class User(
+    val id: Int,
+    val name: String,
+    val roles: Array<String>
+);
+
 class Day09 : Solution {
 
-    override fun part1(input: String): String = uniqueTailPositions(2, input)
 
     override fun part2(input: String): String = uniqueTailPositions(10, input)
 
@@ -72,13 +85,43 @@ class Day09 : Solution {
                 }
                 // Track where the tail visited
                 visited.add(pieces.last())
+
+
+//                displayMap(pieces, width, height)
             }
         }
 
 //        visualize(visited)
-
         return visited.count().toString()
     }
+
+    private fun displayMap(pieces: List<Position>, width: Int, height: Int) {
+        val head = pieces.first()
+        val others = setOf(*pieces.toTypedArray())
+
+        for (y in 4 downTo 0) {
+            for (x in 0 until 6) {
+                val pos = Position(x, y)
+                if (head == pos) {
+                    print("H")
+                } else if (others.contains(pos)) {
+                    for (j in 1 until pieces.size) {
+                        if (pieces[j] == pos) {
+                            print(j.toString())
+                            break
+                        }
+                    }
+                } else {
+                    print(".")
+                }
+            }
+            println()
+        }
+        println("")
+    }
+
+    // Expect for real input:
+    // 5930, 2443 (only second part is wrong..)
 
     private fun visualize(positions: Set<Position>) {
         val minW = positions.minOf { it.first }
@@ -89,7 +132,7 @@ class Day09 : Solution {
         println()
         for (y in minH..maxH) {
             for (x in minW..maxW) {
-                print(if (positions.contains(Position(x, maxH - y))) '#' else '.')
+                print(if (positions.contains(Position(x, minH + maxH - y))) '#' else '.')
             }
             println()
         }
