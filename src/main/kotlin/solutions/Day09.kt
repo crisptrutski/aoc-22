@@ -20,27 +20,18 @@ fun Position.move(dir: Direction): Position {
 }
 
 private fun Position.getPulledBy(parent: Position): Position {
-    var x = this.first
-    var y = this.second
+    val dx = parent.first - first
+    val dy = parent.second - second
+    val shouldMove = dx.absoluteValue > 1 || dy.absoluteValue > 1
 
-    val dx = parent.first - x
-    val dy = parent.second - y
-
-    if (dx.absoluteValue > 1) {
-        x += dx / dx.absoluteValue
-        if (dy.absoluteValue > 1) {
-            y += dy / dy.absoluteValue
-        } else {
-            y = parent.second
-        }
+    return if (shouldMove) {
+        Position(
+            this.first + parent.first.compareTo(first),
+            this.second + parent.second.compareTo(second),
+        )
     } else {
-        if (dy.absoluteValue > 1) {
-            x = parent.first
-            y += dy / dy.absoluteValue
-        }
+        this
     }
-
-    return Position(x, y)
 }
 
 private fun String.toMove(): Move = Move(
@@ -86,12 +77,11 @@ class Day09 : Solution {
                 // Track where the tail visited
                 visited.add(pieces.last())
 
-
-//                displayMap(pieces, width, height)
+                // displayMap(pieces, 6, 5)
             }
         }
 
-//        visualize(visited)
+        // visualize(visited)
         return visited.count().toString()
     }
 
@@ -99,8 +89,8 @@ class Day09 : Solution {
         val head = pieces.first()
         val others = setOf(*pieces.toTypedArray())
 
-        for (y in 4 downTo 0) {
-            for (x in 0 until 6) {
+        for (y in (width - 1) downTo 0) {
+            for (x in 0 until height) {
                 val pos = Position(x, y)
                 if (head == pos) {
                     print("H")
